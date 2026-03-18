@@ -1,3 +1,4 @@
+`python
 import requests
 import pandas as pd
 import ta
@@ -18,12 +19,12 @@ alertas_enviados = {}
 
 def get_top100_symbols():
     try:
-        url = "https://api.binance.us/api/v3/ticker/24hr"
+        url = "https://api.bybit.com/v5/market/tickers?category=spot"
         r = requests.get(url, timeout=15)
         data = r.json()
-        usdt = [x for x in data if isinstance(x, dict) and x.get("symbol","").endswith("USDT")]
-        usdt = [x for x in usdt if float(x.get("quoteVolume", 0)) > 1000000]
-        usdt.sort(key=lambda x: float(x.get("quoteVolume", 0)), reverse=True)
+        tickers = data["result"]["list"]
+        usdt = [x for x in tickers if x["symbol"].endswith("USDT") and float(x.get("turnover24h", 0)) > 1000000]
+        usdt.sort(key=lambda x: float(x.get("turnover24h", 0)), reverse=True)
         symbols = [x["symbol"] for x in usdt[:100]]
         print(f"Encontradas {len(symbols)} moedas")
         return symbols
@@ -31,17 +32,19 @@ def get_top100_symbols():
         print(f"Erro get_symbols: {e}")
         return ["BTCUSDT","ETHUSDT","XRPUSDT","SOLUSDT","BNBUSDT","ADAUSDT","DOGEUSDT"]
 
-def get_candles(symbol, interval="1h", limit=150):
+def get_candles(symbol, interval="60", limit=150):
     try:
-        url = f"https://api.binance.us/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}"
+        url = f"https://api.bybit.com/v5/market/kline?category=spot&symbol={symbol}&interval={interval}&limit={limit}"
         r = requests.get(url, timeout=15)
         data = r.json()
-        if not isinstance(data, list) or len(data) < 50:
+        candles = data["result"]["list"]
+        if not candles or len(candles) < 50:
             return None
-        df = pd.DataFrame(data, columns=["time","open","high","low","close","volume","ct","qav","nt","tbbav","tbqav","ignore"])
+        df = pd.DataFrame(candles, columns=["time","open","high","low","close","volume","turnover"])
         df["close"] = pd.to_numeric(df["close"])
         df["high"]  = pd.to_numeric(df["high"])
         df["low"]   = pd.to_numeric(df["low"])
+        df = df.iloc[::-1].reset_index(drop=True)
         return df
     except Exception as e:
         return None
@@ -135,5 +138,6 @@ def main():
             print(f"Erro main: {e}")
             time.sleep(60)
 
-if __name__ == "__main__":
+if name == "main":
     main()
+`
