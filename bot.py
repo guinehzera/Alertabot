@@ -18,7 +18,7 @@ alertas_enviados = {}
 
 def get_top100_symbols():
     try:
-        url = "https://api.binance.com/api/v3/ticker/24hr"
+        url = "https://api.binance.us/api/v3/ticker/24hr"
         r = requests.get(url, timeout=15)
         data = r.json()
         usdt = [x for x in data if isinstance(x, dict) and x.get("symbol","").endswith("USDT")]
@@ -33,7 +33,7 @@ def get_top100_symbols():
 
 def get_candles(symbol, interval="1h", limit=150):
     try:
-        url = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}"
+        url = f"https://api.binance.us/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}"
         r = requests.get(url, timeout=15)
         data = r.json()
         if not isinstance(data, list) or len(data) < 50:
