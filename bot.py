@@ -18,28 +18,31 @@ alertas_enviados = {}
 
 def get_top100_symbols():
     try:
-        url = "https://api.bybit.com/v5/market/tickers?category=spot"
+        url = "https://api.kucoin.com/api/v1/market/allTickers"
         r = requests.get(url, timeout=15)
         data = r.json()
-        tickers = data["result"]["list"]
-        usdt = [x for x in tickers if x["symbol"].endswith("USDT") and float(x.get("turnover24h", 0)) > 1000000]
-        usdt.sort(key=lambda x: float(x.get("turnover24h", 0)), reverse=True)
+        tickers = data["data"]["ticker"]
+        usdt = [x for x in tickers if x["symbol"].endswith("-USDT") and float(x.get("volValue", 0)) > 1000000]
+        usdt.sort(key=lambda x: float(x.get("volValue", 0)), reverse=True)
         symbols = [x["symbol"] for x in usdt[:100]]
         print(f"Encontradas {len(symbols)} moedas")
         return symbols
     except Exception as e:
         print(f"Erro get_symbols: {e}")
-        return ["BTCUSDT","ETHUSDT","XRPUSDT","SOLUSDT","BNBUSDT","ADAUSDT","DOGEUSDT"]
+        return ["BTC-USDT","ETH-USDT","XRP-USDT","SOL-USDT","BNB-USDT","ADA-USDT","DOGE-USDT"]
 
-def get_candles(symbol, interval="60", limit=150):
+def get_candles(symbol, interval="1hour", limit=150):
     try:
-        url = f"https://api.bybit.com/v5/market/kline?category=spot&symbol={symbol}&interval={interval}&limit={limit}"
+        import time as t
+        end = int(t.time())
+        start = end - (limit * 3600)
+        url = f"https://api.kucoin.com/api/v1/market/candles?type={interval}&symbol={symbol}&startAt={start}&endAt={end}"
         r = requests.get(url, timeout=15)
         data = r.json()
-        candles = data["result"]["list"]
+        candles = data["data"]
         if not candles or len(candles) < 50:
             return None
-        df = pd.DataFrame(candles, columns=["time","open","high","low","close","volume","turnover"])
+        df = pd.DataFrame(candles, columns=["time","open","close","high","low","volume","turnover"])
         df["close"] = pd.to_numeric(df["close"])
         df["high"]  = pd.to_numeric(df["high"])
         df["low"]   = pd.to_numeric(df["low"])
@@ -47,6 +50,7 @@ def get_candles(symbol, interval="60", limit=150):
         return df
     except Exception as e:
         return None
+
 
 def calcular_indicadores(df):
     try:
