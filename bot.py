@@ -23,7 +23,7 @@ def get_top50_symbols():
         data = r.json()
         usdt = [x for x in data if x["symbol"].endswith("USDT") and float(x["quoteVolume"]) > 10000000]
         usdt.sort(key=lambda x: float(x["quoteVolume"]), reverse=True)
-        return [x["symbol"] for x in usdt[:50]]
+        return [x["symbol"] for x in usdt[:100]]
     except:
         return ["BTCUSDT","ETHUSDT","XRPUSDT","SOLUSDT","BNBUSDT","ADAUSDT","DOGEUSDT"]
 
