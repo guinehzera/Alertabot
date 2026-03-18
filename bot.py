@@ -137,5 +137,5 @@ def main():
             print(f"Erro main: {e}")
             time.sleep(60)
 
-if name == "main":
+if __name__ == "__main__":
     main()
