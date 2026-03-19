@@ -31,7 +31,7 @@ def get_top100_symbols():
         print(f"Erro get_symbols: {e}")
         return ["BTC-USDT","ETH-USDT","XRP-USDT","SOL-USDT","BNB-USDT","ADA-USDT","DOGE-USDT"]
 
-def get_candles(symbol, interval="1hour", limit=150):
+def get_candles(symbol, interval="4hour", limit=150):
     try:
         import time as t
         end = int(t.time())
