@@ -18,35 +18,30 @@ alertas_enviados = {}
 
 def get_top100_symbols():
     try:
-        url = "https://api.kucoin.com/api/v1/market/allTickers"
+        url = "https://api.gateio.ws/api/v4/spot/tickers"
         r = requests.get(url, timeout=15)
         data = r.json()
-        tickers = data["data"]["ticker"]
-        usdt = [x for x in tickers if x["symbol"].endswith("-USDT") and float(x.get("volValue", 0)) > 1000000]
-        usdt.sort(key=lambda x: float(x.get("volValue", 0)), reverse=True)
-        symbols = [x["symbol"] for x in usdt[:100]]
+        usdt = [x for x in data if x["currency_pair"].endswith("_USDT") and float(x.get("quote_volume", 0)) > 1000000]
+        usdt.sort(key=lambda x: float(x.get("quote_volume", 0)), reverse=True)
+        symbols = [x["currency_pair"].replace("_", "") for x in usdt[:100]]
         print(f"Encontradas {len(symbols)} moedas")
         return symbols
     except Exception as e:
         print(f"Erro get_symbols: {e}")
-        return ["BTC-USDT","ETH-USDT","XRP-USDT","SOL-USDT","BNB-USDT","ADA-USDT","DOGE-USDT"]
+        return ["BTCUSDT","ETHUSDT","XRPUSDT","SOLUSDT","BNBUSDT","ADAUSDT","DOGEUSDT"]
 
-def get_candles(symbol, interval="4hour", limit=150):
+def get_candles(symbol, interval="4h", limit=150):
     try:
-        import time as t
-        end = int(t.time())
-        start = end - (limit * 3600)
-        url = f"https://api.kucoin.com/api/v1/market/candles?type={interval}&symbol={symbol}&startAt={start}&endAt={end}"
+        pair = symbol[:-4] + "_USDT"
+        url = f"https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair={pair}&interval={interval}&limit={limit}"
         r = requests.get(url, timeout=15)
         data = r.json()
-        candles = data["data"]
-        if not candles or len(candles) < 50:
+        if not data or len(data) < 50:
             return None
-        df = pd.DataFrame(candles, columns=["time","open","close","high","low","volume","turnover"])
+        df = pd.DataFrame(data, columns=["time","volume","close","high","low","open","base_volume","is_closed"])
         df["close"] = pd.to_numeric(df["close"])
         df["high"]  = pd.to_numeric(df["high"])
         df["low"]   = pd.to_numeric(df["low"])
-        df = df.iloc[::-1].reset_index(drop=True)
         return df
     except Exception as e:
         return None
