@@ -3,10 +3,12 @@ import pandas as pd
 import ta
 import time
 import os
+import threading
 from datetime import datetime
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+TELEGRAM_TOKEN = "8771549016:AAENyF7OFcpIxLdUPZU2gRsV49kXhL0RBko"
+TELEGRAM_CHAT_ID = "6532282065"
 
 RSI_SOBREVENDIDO = 30
 RSI_SOBRECOMPRADO = 70
@@ -15,6 +17,19 @@ STOCH_SOBRECOMPRADO = 80
 INTERVALO_CHECAGEM = 60 * 15
 
 alertas_enviados = {}
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot rodando!")
+    def log_message(self, format, *args):
+        pass
+
+def iniciar_servidor():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), Handler)
+    server.serve_forever()
 
 def get_top100_symbols():
     try:
@@ -43,9 +58,8 @@ def get_candles(symbol, interval="4h", limit=150):
         df["high"]  = pd.to_numeric(df["high"])
         df["low"]   = pd.to_numeric(df["low"])
         return df
-    except Exception as e:
+    except:
         return None
-
 
 def calcular_indicadores(df):
     try:
@@ -60,7 +74,7 @@ def calcular_indicadores(df):
         if len(df) < 2:
             return None
         return df
-    except Exception as e:
+    except:
         return None
 
 def enviar_telegram(mensagem):
@@ -88,7 +102,7 @@ def checar_sinal(symbol, df):
                 f"💰 {symbol.replace('USDT','')}/USDT\n"
                 f"📊 RSI 14: {rsi:.1f} | Stoch 14: {stoch:.1f}\n"
                 f"💵 Preco: ${preco:,.4f}\n"
-                f"⏰ {agora} | Grafico 1H\n"
+                f"⏰ {agora} | Grafico 4H\n"
                 f"👉 Analise o 15min para entrada!"
             )
             enviar_telegram(msg)
@@ -101,7 +115,7 @@ def checar_sinal(symbol, df):
                 f"💰 {symbol.replace('USDT','')}/USDT\n"
                 f"📊 RSI 14: {rsi:.1f} | Stoch 14: {stoch:.1f}\n"
                 f"💵 Preco: ${preco:,.4f}\n"
-                f"⏰ {agora} | Grafico 1H\n"
+                f"⏰ {agora} | Grafico 4H\n"
                 f"👉 Analise o 15min para entrada!"
             )
             enviar_telegram(msg)
@@ -111,14 +125,17 @@ def checar_sinal(symbol, df):
         print(f"Erro checar_sinal {symbol}: {e}")
 
 def main():
-    print("Bot iniciado!")
-    enviar_telegram("✅ <b>Bot de Alertas iniciado!</b>\nMonitorando Top 100 cripto no 1H...\nRSI 14 | Stoch 14/3/3")
+    t = threading.Thread(target=iniciar_servidor)
+    t.daemon = True
+    t.start()
+    print("Servidor HTTP iniciado!")
+
+    enviar_telegram("✅ <b>Bot iniciado!</b>\nMonitorando Top 100 cripto no 4H\nRSI 14 | Stoch 14/3/3")
 
     while True:
         try:
             symbols = get_top100_symbols()
             print(f"Verificando {len(symbols)} moedas...")
-
             for symbol in symbols:
                 df = get_candles(symbol)
                 if df is None:
@@ -128,13 +145,13 @@ def main():
                     continue
                 checar_sinal(symbol, df)
                 time.sleep(0.5)
-
-            print(f"Checagem concluida. Proxima em 15 minutos.")
+            print("Checagem concluida. Proxima em 15 minutos.")
             time.sleep(INTERVALO_CHECAGEM)
-
         except Exception as e:
             print(f"Erro main: {e}")
             time.sleep(60)
 
 if __name__ == "__main__":
     main()
+
+
