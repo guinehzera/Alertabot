@@ -14,7 +14,7 @@ RSI_SOBREVENDIDO = 30
 RSI_SOBRECOMPRADO = 70
 STOCH_SOBREVENDIDO = 20
 STOCH_SOBRECOMPRADO = 80
-INTERVALO_CHECAGEM = 60 * 15
+INTERVALO_CHECAGEM = 60 * 30
 
 alertas_enviados = {}
 
@@ -135,7 +135,7 @@ def main():
     t.start()
     print("Servidor HTTP iniciado!")
 
-    enviar_telegram("✅ <b>Bot iniciado!</b>\nMonitorando Top 100 cripto no 1d\nRSI 14 | Stoch 14/3/3")
+    enviar_telegram("✅ <b>Bot iniciado!</b>\nMonitorando Top 100 cripto no 1D\nRSI 14 | Stoch 14/3/3")
 
     while True:
         try:
