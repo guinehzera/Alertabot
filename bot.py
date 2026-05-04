@@ -120,7 +120,7 @@ def checar_sinal(symbol, df):
                 f"💰 {symbol.replace('USDT','')}/USDT\n"
                 f"📊 RSI 14: {rsi:.1f} | Stoch 14: {stoch:.1f}\n"
                 f"💵 Preco: ${preco:,.4f}\n"
-                f"⏰ {agora} | Grafico 4H\n"
+                f"⏰ {agora} | Grafico 1d\n"
                 f"👉 Analise o 15min para entrada!"
             )
             enviar_telegram(msg)
@@ -135,7 +135,7 @@ def main():
     t.start()
     print("Servidor HTTP iniciado!")
 
-    enviar_telegram("✅ <b>Bot iniciado!</b>\nMonitorando Top 100 cripto no 4H\nRSI 14 | Stoch 14/3/3")
+    enviar_telegram("✅ <b>Bot iniciado!</b>\nMonitorando Top 100 cripto no 1d\nRSI 14 | Stoch 14/3/3")
 
     while True:
         try:
