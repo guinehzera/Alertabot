@@ -50,7 +50,7 @@ def get_top100_symbols():
         print(f"Erro get_symbols: {e}")
         return ["BTCUSDT","ETHUSDT","XRPUSDT","SOLUSDT","BNBUSDT","ADAUSDT","DOGEUSDT"]
 
-def get_candles(symbol, interval="4h", limit=150):
+def get_candles(symbol, interval="1d", limit=150):
     try:
         pair = symbol[:-4] + "_USDT"
         url = f"https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair={pair}&interval={interval}&limit={limit}"
